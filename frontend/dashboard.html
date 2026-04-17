@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow - Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
+              400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
+              800: '#3730a3', 900: '#312e81', 950: '#1e1b4b'
+            },
+            accent: {
+              50: '#faf5ff', 100: '#f3e8ff', 200: '#e9d5ff', 300: '#d8b4fe',
+              400: '#c084fc', 500: '#a855f7', 600: '#9333ea', 700: '#7e22ce',
+              800: '#6b21a8', 900: '#581c87', 950: '#3b0764'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes slide-in { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes scale-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    @keyframes progress-grow { from { width: 0%; } }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    .animate-slide-in { animation: slide-in 0.3s ease-out forwards; }
+    .animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
+    .animate-scale-in { animation: scale-in 0.2s ease-out forwards; }
+    .animate-progress { animation: progress-grow 1s ease-out forwards; }
+    .skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+    .dark .skeleton { background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%); background-size: 200% 100%; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
+  <header class="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+    <div class="mx-auto max-w-6xl flex items-center justify-between px-4 h-14">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <svg class="w-7 h-7 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+          <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">TaskFlow</span>
+        </div>
+        <nav class="hidden sm:flex items-center gap-1 ml-6">
+          <a href="/" class="px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Tasks</a>
+          <a href="dashboard.html" class="px-3 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950 rounded-md transition-colors">Dashboard</a>
+        </nav>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleDark()" class="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+          <svg class="w-5 h-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 animate-fade-in">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Track your progress and activity</p>
+      </div>
+      <div class="flex bg-white dark:bg-slate-900 rounded-lg p-1 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <button onclick="setDateRange('week')" id="btn-week" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950">This Week</button>
+        <button onclick="setDateRange('month')" id="btn-month" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">This Month</button>
+        <button onclick="setDateRange('all')" id="btn-all" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">All Time</button>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in" style="animation-delay: 0.1s">
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 transition-all hover:shadow-md hover:-translate-y-0.5">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Tasks</p>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white mt-1 counter" id="stat-total">0</p>
+          </div>
+          <div class="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+            <svg class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 transition-all hover:shadow-md hover:-translate-y-0.5">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Completed</p>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white mt-1 counter" id="stat-completed">0</p>
+          </div>
+          <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 transition-all hover:shadow-md hover:-translate-y-0.5">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Completion Rate</p>
+            <p class="text-3xl font-bold text-slate-900 dark:text-white mt-1"><span class="counter" id="stat-rate">0</span>%</p>
+          </div>
+          <div class="p-3 bg-accent-100 dark:bg-accent-900/30 rounded-xl">
+            <svg class="w-6 h-6 text-accent-600 dark:text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 transition-all hover:shadow-md hover:-translate-y-0.5">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Overdue Tasks</p>
+            <p class="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-1 counter" id="stat-overdue">0</p>
+          </div>
+          <div class="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+            <svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Category Breakdown -->
+      <section class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 animate-fade-in" style="animation-delay: 0.2s">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Category Breakdown</h2>
+        </div>
+        <div id="categoryBreakdown" class="space-y-5">
+          <!-- Loading Skeleton -->
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <div class="h-4 w-24 rounded skeleton"></div>
+              <div class="h-4 w-16 rounded skeleton"></div>
+            </div>
+            <div class="h-3 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+              <div class="h-full rounded-full skeleton" style="width: 60%"></div>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <div class="h-4 w-32 rounded skeleton"></div>
+              <div class="h-4 w-16 rounded skeleton"></div>
+            </div>
+            <div class="h-3 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+              <div class="h-full rounded-full skeleton" style="width: 40%"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent Activity -->
+      <section class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 animate-fade-in" style="animation-delay: 0.3s">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Recent Activity</h2>
+        </div>
+        <div id="recentActivity" class="relative">
+          <div class="absolute left-3 top-2 bottom-2 w-0.5 bg-slate-100 dark:bg-slate-800"></div>
+          <!-- Loading Skeleton -->
+          <div class="relative pl-8 pb-6">
+            <div class="absolute left-2 top-1.5 w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-900"></div>
+            <div class="h-4 w-full rounded skeleton mb-2"></div>
+            <div class="h-3 w-20 rounded skeleton"></div>
+          </div>
+          <div class="relative pl-8 pb-6">
+            <div class="absolute left-2 top-1.5 w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-900"></div>
+            <div class="h-4 w-3/4 rounded skeleton mb-2"></div>
+            <div class="h-3 w-20 rounded skeleton"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

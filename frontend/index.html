@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow - Modern Task Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
+              400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
+              800: '#3730a3', 900: '#312e81', 950: '#1e1b4b'
+            },
+            accent: {
+              50: '#faf5ff', 100: '#f3e8ff', 200: '#e9d5ff', 300: '#d8b4fe',
+              400: '#c084fc', 500: '#a855f7', 600: '#9333ea', 700: '#7e22ce',
+              800: '#6b21a8', 900: '#581c87', 950: '#3b0764'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes slide-in { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes scale-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    @keyframes bounce-subtle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @keyframes confetti-fall { 0% { transform: translateY(-10px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+    .animate-slide-in { animation: slide-in 0.3s ease-out forwards; }
+    .animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
+    .animate-scale-in { animation: scale-in 0.2s ease-out forwards; }
+    .animate-bounce-subtle { animation: bounce-subtle 2s ease-in-out infinite; }
+    .confetti-particle { position: fixed; width: 10px; height: 10px; animation: confetti-fall 3s linear forwards; pointer-events: none; z-index: 100; }
+    .drag-over { background: rgba(99, 102, 241, 0.1); border-color: #6366f1 !important; }
+    .drag-ghost { opacity: 0.5; transform: rotate(3deg); }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
+  <header class="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+    <div class="mx-auto max-w-6xl flex items-center justify-between px-4 h-14">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <svg class="w-7 h-7 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+          <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">TaskFlow</span>
+        </div>
+        <nav class="hidden sm:flex items-center gap-1 ml-6">
+          <a href="/" class="px-3 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950 rounded-md transition-colors">Tasks</a>
+          <a href="dashboard.html" class="px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Dashboard</a>
+        </nav>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="relative hidden sm:block">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" id="searchInput" placeholder="Search tasks..." class="w-48 pl-10 pr-4 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-shadow">
+        </div>
+        <button onclick="toggleDark()" class="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+          <svg class="w-5 h-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-6">
+    <div class="flex flex-col sm:flex-row gap-3 mb-6">
+      <div class="relative flex-1 sm:hidden">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" id="searchInputMobile" placeholder="Search tasks..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500">
+      </div>
+      <select id="filterStatus" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+        <option value="all">All Status</option>
+        <option value="active">Active</option>
+        <option value="completed">Completed</option>
+      </select>
+      <select id="filterPriority" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+        <option value="all">All Priorities</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+      <select id="filterCategory" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+        <option value="all">All Categories</option>
+      </select>
+      <button onclick="openTaskModal()" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg shadow-sm hover:shadow transition-all active:scale-95 flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Create Task
+      </button>
+    </div>
+
+    <div id="categoriesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="col-span-full animate-pulse">
+        <div class="h-8 bg-slate-200 dark:bg-slate-800 rounded w-1/4 mb-4"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="h-64 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
+          <div class="h-64 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
+          <div class="h-64 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
+          <div class="h-64 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="taskModal" class="fixed inset-0 z-50 hidden">
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="closeTaskModal()"></div>
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md p-6 animate-scale-in">
+        <h2 class="text-lg font-bold text-slate-900 dark:text-white" id="modalTitle">Create New Task</h2>
+        <form id="taskForm" class="mt-4 space-y-4">
+          <input type="hidden" id="taskId">
+          <div class="space-y-1.5">
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Title *</label>
+            <input type="text" id="taskTitle" required placeholder="Enter task title..." class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500">
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+            <textarea id="taskDescription" rows="3" maxlength="500" placeholder="Add details..." class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"></textarea>
+            <p class="text-xs text-slate-400 text-right"><span id="charCount">0</span>/500</p>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-1.5">
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Priority</label>
+              <select id="taskPriority" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                <option value="High">🔴 High</option>
+                <option value="Medium" selected>🟡 Medium</option>
+                <option value="Low">🟢 Low</option>
+              </select>
+            </div>
+            <div class="space-y-1.5">
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Due Date</label>
+              <input type="date" id="taskDueDate" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Category</label>
+            <select id="taskCategory" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"></select>
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" onclick="closeTaskModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">Cancel</button>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg shadow-sm transition-all active:scale-95">Save Task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-4 right-4 z-50 hidden"></div>
+  <div id="confettiContainer"></div>
+
+  <script src="app.js"></script>
+  <script src="tasks.js"></script>
+  <script src="categories.js"></script>
+</body>
+</html>
